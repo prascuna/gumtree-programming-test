@@ -1,5 +1,7 @@
 package com.github.prascuna.services
 
+import java.time.LocalDate
+
 import com.github.prascuna.models.AddressBook.Entry
 import com.github.prascuna.models.AddressBook.GenderEnum.Gender
 
@@ -41,7 +43,11 @@ class AnswersServiceImpl(addressBook: List[Entry]) extends AnswersService {
   override def countByGender(gender: Gender): Int =
     Try(addressBook.groupBy(_.gender)(gender).size).getOrElse(0)
 
-  override def oldestPerson(): Entry = ???
+  override def oldestPerson(): Entry = {
+    implicit val localDateOrdering: Ordering[LocalDate] = Ordering.by(_.toEpochDay)
+    implicit val ordering = Ordering.by[Entry, LocalDate](element => element.dob)
+    addressBook.min
+  }
 
   override def ageDifference(nameA: String, nameB: String): Try[Long] = ???
 }
