@@ -4,8 +4,9 @@ import java.time.LocalDate
 
 import com.github.prascuna.models.AddressBook.Entry
 import com.github.prascuna.models.AddressBook.GenderEnum.Gender
-import com.github.prascuna.services.AnswersService.PersonNotFound
+import com.github.prascuna.services.AnswersService.{EmptyAddressBook, PersonNotFound}
 
+import scala.util.control.Exception._
 import scala.util.{Failure, Success, Try}
 
 trait AnswersService {
@@ -22,10 +23,11 @@ trait AnswersService {
     *
     * @return
     */
-  def oldestPerson(): Entry
+  def oldestPerson(): Try[Entry]
 
   /**
     * Searches for the given names and calculate the age difference in days
+    * Assumption: There are no more than one person with the same name
     *
     * @param nameA
     * @param nameB
@@ -38,16 +40,20 @@ object AnswersService {
 
   case class PersonNotFound(name: String) extends RuntimeException("Person Not Found: " + name)
 
+  case object EmptyAddressBook extends RuntimeException("Operation non supported on an empty addressbook")
+
 }
 
 class AnswersServiceImpl(addressBook: List[Entry]) extends AnswersService {
   override def countByGender(gender: Gender): Int =
     Try(addressBook.groupBy(_.gender)(gender).size).getOrElse(0)
 
-  override def oldestPerson(): Entry = {
-    implicit val localDateOrdering: Ordering[LocalDate] = Ordering.by(_.toEpochDay)
-    implicit val ordering = Ordering.by[Entry, LocalDate](element => element.dob)
-    addressBook.min
+  override def oldestPerson(): Try[Entry] = {
+    (handling(classOf[UnsupportedOperationException]) by (_ => Failure(EmptyAddressBook))) {
+      implicit val localDateOrdering: Ordering[LocalDate] = Ordering.by(_.toEpochDay)
+      implicit val ordering = Ordering.by[Entry, LocalDate](element => element.dob)
+      Success(addressBook.min)
+    }
   }
 
   override def ageDifference(nameA: String, nameB: String): Try[Long] = {

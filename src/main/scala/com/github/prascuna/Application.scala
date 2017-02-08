@@ -11,7 +11,7 @@ import scala.util.{Failure, Success}
 object Application {
 
   def main(args: Array[String]): Unit = {
-    if(args.size != 1) {
+    if (args.size != 1) {
       showUsage
     } else {
       val file = new File(args(0))
@@ -32,7 +32,10 @@ object Application {
 
           val answers = List(
             printableAnswer(1, noOfMales.toString),
-            printableAnswer(2, oldestPerson.name),
+            oldestPerson match {
+              case Success(person) => printableAnswer(2, person.name)
+              case Failure(e) => printableAnswer(2, "Error: " + e.getMessage)
+            },
             daysDifference match {
               case Success(days) =>
                 printableAnswer(3, days.toString)
