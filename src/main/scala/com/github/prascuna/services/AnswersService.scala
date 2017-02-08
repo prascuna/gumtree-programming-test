@@ -4,8 +4,9 @@ import java.time.LocalDate
 
 import com.github.prascuna.models.AddressBook.Entry
 import com.github.prascuna.models.AddressBook.GenderEnum.Gender
+import com.github.prascuna.services.AnswersService.PersonNotFound
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 trait AnswersService {
   /**
@@ -35,7 +36,7 @@ trait AnswersService {
 
 object AnswersService {
 
-  case object PersonNotFound extends RuntimeException("Person Not Found")
+  case class PersonNotFound(name: String) extends RuntimeException("Person Not Found: " + name)
 
 }
 
@@ -49,5 +50,10 @@ class AnswersServiceImpl(addressBook: List[Entry]) extends AnswersService {
     addressBook.min
   }
 
-  override def ageDifference(nameA: String, nameB: String): Try[Long] = ???
+  override def ageDifference(nameA: String, nameB: String): Try[Long] = {
+    for {
+      personA <- addressBook.find(_.name == nameA).fold[Try[Entry]](Failure(PersonNotFound(nameA)))(Success(_))
+      personB <- addressBook.find(_.name == nameB).fold[Try[Entry]](Failure(PersonNotFound(nameB)))(Success(_))
+    } yield Math.abs(personA.dob.toEpochDay - personB.dob.toEpochDay)
+  }
 }

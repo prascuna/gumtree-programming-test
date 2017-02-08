@@ -37,7 +37,7 @@ class AnswersServiceTest extends path.FunSpec with Matchers with AnswersServiceT
       }
       describe("if one of the persons is not found ") {
         it("should return a Failure") {
-          answersService.ageDifference("Bill McKnight", "Jimmy Robinson") shouldBe Failure(PersonNotFound)
+          answersService.ageDifference("Bill McKnight", "Jimmy Robinson") shouldBe Failure(PersonNotFound("Jimmy Robinson"))
         }
       }
     }
