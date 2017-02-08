@@ -18,7 +18,7 @@ object Application {
 
     loader.load(file) match {
       case Success(addressBook) =>
-        
+
       case Failure(_) =>
         println("Cannot load AddressBook")
     }
