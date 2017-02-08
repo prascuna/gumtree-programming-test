@@ -38,7 +38,8 @@ object AnswersService {
 }
 
 class AnswersServiceImpl(addressBook: List[Entry]) extends AnswersService {
-  override def countByGender(gender: Gender): Int = ???
+  override def countByGender(gender: Gender): Int =
+    Try(addressBook.groupBy(_.gender)(gender).size).getOrElse(0)
 
   override def oldestPerson(): Entry = ???
 
